@@ -21,7 +21,7 @@ void ajouterEtudiant()
     }
     if (nbEtu < 0)
     {
-        printf("Erreur, la valeur fournie pournbEtu est invalide");
+        printf("Erreur, la valeur fournie pour nbEtu est invalide");
         return;
     };
 
