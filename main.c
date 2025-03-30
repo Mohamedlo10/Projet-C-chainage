@@ -3,7 +3,7 @@
 
 int main()
 {
-
+    restaurerDonnees();
     printf("=== Test de la fonction ajouterEtudiant ===\n");
 
     do
@@ -37,6 +37,7 @@ int main()
             break;
 
         case 6:
+            sauvegarderDonnees();
             printf("Au revoir !\n");
             break;
 

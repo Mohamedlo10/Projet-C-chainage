@@ -15,11 +15,13 @@ extern int ALPHABETIQUE[MAX_ETUDIANTS];
 extern int nbEtu;
 extern int choix;
 extern int DEB;
+extern int DEBAlph;
+extern char *fichier;
 
-void ajouterEtudiant();   // fait
-void supprimerEtudiant(); // fait
-void sauvegarderDonnees(const char *fichier);
-void restaurerDonnees(const char *fichier);
+void ajouterEtudiant();                // fait
+void supprimerEtudiant();              // fait
+void sauvegarderDonnees();             // Fait
+void restaurerDonnees();               // Fait
 void afficherParMerite();              // fait
 void chainageSuivant(Etudiant e);      // fait
 void chainageAlphabetique(Etudiant e); // fait

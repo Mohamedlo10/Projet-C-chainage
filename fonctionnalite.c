@@ -9,6 +9,7 @@ int nbEtu = 0;
 int choix;
 int DEB = -1;
 int DEBAlph = -1;
+char *fichier = "etudiants.txt";
 
 void ajouterEtudiant()
 {
@@ -104,7 +105,7 @@ void supprimerEtudiant()
     }
     int successeur = SUIVANT[numero];
     int precedent;
-    for (int i = 0; i < nbEtu; i++)
+    for (int i = 0; i < nbEtu - 1; i++)
     {
         if (SUIVANT[i] == numero)
         {
@@ -116,7 +117,7 @@ void supprimerEtudiant()
 
     int successeur2 = ALPHABETIQUE[numero];
     int precedent2;
-    for (int i = 0; i < nbEtu; i++)
+    for (int i = 0; i < nbEtu - 1; i++)
     {
         if (ALPHABETIQUE[i] == numero)
         {
@@ -144,11 +145,13 @@ void afficherParMerite()
     else
     {
         int i = DEB;
+        int rang = 1;
         while (i != -1)
         {
-            printf("%d Numero: %d, Nom: %s, Note: %.1f\n", i,
+            printf("rang :%d Numero: %d, Nom: %s, Note: %.1f\n", rang,
                    VETU[i].numero, VETU[i].nom, VETU[i].note);
             i = SUIVANT[i];
+            rang++;
         }
     }
 }
@@ -164,7 +167,8 @@ void afficherParOrdreAlphabetique()
         int i = DEBAlph;
         while (i != -1)
         {
-            printf("%d Numero: %d, Nom: %s, Note: %.1f\n", i,
+
+            printf("Numero: %d, Nom: %s, Note: %.1f\n",
                    VETU[i].numero, VETU[i].nom, VETU[i].note);
             i = ALPHABETIQUE[i];
         }
@@ -185,4 +189,101 @@ void afficherParOrdreAleatoire()
                    VETU[i].numero, VETU[i].nom, VETU[i].note);
         }
     }
+}
+
+void sauvegarderDonnees()
+{
+    FILE *f = fopen(fichier, "w"); // "w" = write text
+    if (f == NULL)
+    {
+        printf("Erreur lors de l'ouverture du fichier %s pour sauvegarde.\n", fichier);
+        return;
+    }
+
+    // Sauvegarder NBETU et DEB
+    fprintf(f, "%d %d %d\n", nbEtu, DEB, DEBAlph);
+
+    // Sauvegarder VETU
+    for (int i = 0; i < nbEtu; i++)
+    {
+        fprintf(f, "%d %s %lf\n", VETU[i].numero, VETU[i].nom, VETU[i].note);
+    }
+
+    // Sauvegarder SUIVANT
+    for (int i = 0; i < nbEtu; i++)
+    {
+        fprintf(f, "%d ", SUIVANT[i]);
+    }
+
+    // Sauvegarder ALPHABETIQUE
+    for (int i = 0; i < nbEtu; i++)
+    {
+        fprintf(f, "%d ", ALPHABETIQUE[i]);
+    }
+    fprintf(f, "\n");
+
+    fclose(f);
+    printf("Donnees sauvegardees avec succes dans %s.\n", fichier);
+}
+
+void restaurerDonnees()
+{
+    FILE *f = fopen(fichier, "r"); // "r" = read text
+    if (f == NULL)
+    {
+        printf("Erreur lors de l'ouverture du fichier %s pour restauration.\n", fichier);
+        return;
+    }
+
+    // Lire nbEtu et DEB
+    if (fscanf(f, "%d %d %d\n", &nbEtu, &DEB, &DEBAlph) != 3)
+    {
+        printf("Erreur lors de la lecture de nbEtu et DEB.\n");
+        fclose(f);
+        return;
+    }
+
+    if (nbEtu < 0 || nbEtu > MAX_ETUDIANTS)
+    {
+        printf("Valeur de nbEtu invalide dans le fichier.\n");
+        fclose(f);
+        return;
+    }
+
+    // Lire VETU
+    for (int i = 0; i < nbEtu; i++)
+    {
+        if (fscanf(f, "%d %s %lf\n", &VETU[i].numero, VETU[i].nom, &VETU[i].note) != 3)
+        {
+            printf("Erreur lors de la lecture de VETU.\n");
+            fclose(f);
+            return;
+        }
+    }
+
+    // Lire SUIVANT
+    for (int i = 0; i < nbEtu; i++)
+    {
+        if (fscanf(f, "%d ", &SUIVANT[i]) != 1)
+        {
+            printf("Erreur lors de la lecture de SUIVANT.\n");
+            fclose(f);
+            return;
+        }
+    }
+
+    // Lire ALPHABETIQUE
+    for (int i = 0; i < nbEtu; i++)
+    {
+        if (fscanf(f, "%d ", &ALPHABETIQUE[i]) != 1)
+        {
+            printf("Erreur lors de la lecture de ALPHABETIQUE.\n");
+            fclose(f);
+            return;
+        }
+    }
+
+    printf("%d %d %d", nbEtu, DEB, DEBAlph);
+    fclose(f);
+    printf("Donnees restaurees avec succes depuis %s.\n", fichier);
 }
