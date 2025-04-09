@@ -45,11 +45,12 @@ void ajouterEtudiant()
 
     chainageAlphabetique(VETU[nbEtu]);
     chainageSuivant(VETU[nbEtu]);
+    nbEtu++;
 }
 
 void chainageSuivant(Etudiant e)
 {
-    int i = nbEtu++;
+    int i = nbEtu;
     SUIVANT[i] = -1;
     if (DEB == -1 || e.note > VETU[DEB].note)
     {
@@ -72,9 +73,10 @@ void chainageSuivant(Etudiant e)
 
 void chainageAlphabetique(Etudiant e)
 {
-    int i = nbEtu;
-    ALPHABETIQUE[i] = -1;
-    if (DEBAlph == -1 || strcmp(e.nom, VETU[DEBAlph].nom) < 0) // deuxieme chaine superieure  a la premiere
+    int i = nbEtu;        // Indice du nouvel étudiant
+    ALPHABETIQUE[i] = -1; // Marqueur de fin par défaut
+
+    if (DEBAlph == -1 || strcmp(e.nom, VETU[DEBAlph].nom) <= 0)
     {
         ALPHABETIQUE[i] = DEBAlph;
         DEBAlph = i;
@@ -83,7 +85,7 @@ void chainageAlphabetique(Etudiant e)
     {
         int prec = DEBAlph;
         int cour = ALPHABETIQUE[DEBAlph];
-        while (cour != -1 && strcmp(VETU[cour].nom, e.nom) <= 0) // deuxieme chaine superieure ou egale a la premiere
+        while (cour != -1 && strcmp(VETU[cour].nom, e.nom) <= 0)
         {
             prec = cour;
             cour = ALPHABETIQUE[cour];
@@ -92,50 +94,106 @@ void chainageAlphabetique(Etudiant e)
         ALPHABETIQUE[i] = cour;
     }
 }
-
 void supprimerEtudiant()
 {
     int numero;
-    printf("veuillez saisir le numero de l'etudiant : ");
+    int indice = -1;
+
+    // Demander le numéro de l'étudiant à supprimer
+    printf("Veuillez saisir le numero de l'etudiant a supprimer : ");
     scanf("%d", &numero);
-    if (numero >= nbEtu)
+    getchar();
+
+    // Rechercher l'étudiant dans le tableau
+    for (int i = 0; i < nbEtu; i++)
     {
-        printf("Cet etudiant n'existe pas");
+        if (VETU[i].numero == numero)
+        {
+            indice = i;
+            break;
+        }
+    }
+
+    // Vérifier si l'étudiant existe
+    if (indice == -1)
+    {
+        printf("Etudiant avec le numero %d non trouve.\n", numero);
         return;
     }
-    int successeur = SUIVANT[numero];
-    int precedent;
-    for (int i = 0; i < nbEtu - 1; i++)
+
+    // Stocker le nom pour le message final
+    char nom[30];
+    strcpy(nom, VETU[indice].nom);
+
+    // Supprimer du chaînage SUIVANT (par note)
+    if (DEB == indice)
     {
-        if (SUIVANT[i] == numero)
+        // Si c'est le premier élément
+        DEB = SUIVANT[indice];
+    }
+    else
+    {
+        // Trouver le prédécesseur dans la chaîne SUIVANT
+        int prec = DEB;
+        while (SUIVANT[prec] != -1 && SUIVANT[prec] != indice)
         {
-            precedent = i;
-            break;
+            prec = SUIVANT[prec];
+        }
+        if (SUIVANT[prec] == indice)
+        {
+            SUIVANT[prec] = SUIVANT[indice];
         }
     }
-    SUIVANT[precedent] = successeur;
 
-    int successeur2 = ALPHABETIQUE[numero];
-    int precedent2;
-    for (int i = 0; i < nbEtu - 1; i++)
+    // Supprimer du chaînage ALPHABETIQUE
+    if (DEBAlph == indice)
     {
-        if (ALPHABETIQUE[i] == numero)
+        // Si c'est le premier élément
+        DEBAlph = ALPHABETIQUE[indice];
+    }
+    else
+    {
+        // Trouver le prédécesseur dans la chaîne ALPHABETIQUE
+        int prec = DEBAlph;
+        while (ALPHABETIQUE[prec] != -1 && ALPHABETIQUE[prec] != indice)
         {
-            precedent2 = i;
-            break;
+            prec = ALPHABETIQUE[prec];
+        }
+        if (ALPHABETIQUE[prec] == indice)
+        {
+            ALPHABETIQUE[prec] = ALPHABETIQUE[indice];
         }
     }
 
-    ALPHABETIQUE[precedent2] = successeur2;
+    // Mise à jour des indices dans les tableaux SUIVANT et ALPHABETIQUE
+    // Pour tous les indices qui sont supérieurs à l'indice supprimé
+    for (int i = 0; i < nbEtu; i++)
+    {
+        if (SUIVANT[i] > indice)
+        {
+            SUIVANT[i]--;
+        }
+        if (ALPHABETIQUE[i] > indice)
+        {
+            ALPHABETIQUE[i]--;
+        }
+    }
 
-    for (int i = numero; i < nbEtu - 1; i++)
+    // Déplacer tous les étudiants après l'indice supprimé
+    for (int i = indice; i < nbEtu - 1; i++)
     {
         VETU[i] = VETU[i + 1];
+        SUIVANT[i] = SUIVANT[i + 1];
+        ALPHABETIQUE[i] = ALPHABETIQUE[i + 1];
+        // Mettre à jour le numéro si nécessaire
+        VETU[i].numero = i;
     }
-    nbEtu--;
-    printf("Suppression reussi !\n");
-}
 
+    // Décrémenter le nombre d'étudiants
+    nbEtu--;
+
+    printf("Etudiant %s (numero %d) supprime avec succes.\n", nom, numero);
+}
 void afficherParMerite()
 {
     if (nbEtu == 0)
@@ -212,7 +270,7 @@ void sauvegarderDonnees()
     // Sauvegarder SUIVANT
     for (int i = 0; i < nbEtu; i++)
     {
-        fprintf(f, "%d ", SUIVANT[i]);
+        fprintf(f, "%d \n", SUIVANT[i]);
     }
 
     // Sauvegarder ALPHABETIQUE
