@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include "fonctionnalite.h"
 #include <string.h>
+#include <stdlib.h>
 
 Etudiant VETU[MAX_ETUDIANTS];
 int SUIVANT[MAX_ETUDIANTS];
@@ -9,12 +10,14 @@ int nbEtu = 0;
 int choix;
 int DEB = -1;
 int DEBAlph = -1;
+int dernierNumero = 0;
 char *fichier = "etudiants.txt";
+
 
 void ajouterEtudiant()
 {
     double note;
-
+    
     if (nbEtu >= 99)
     {
         printf("Erreur, Espace insufisant: le nombre limite d'etudiant a ete atteint");
@@ -25,29 +28,28 @@ void ajouterEtudiant()
         printf("Erreur, la valeur fournie pour nbEtu est invalide");
         return;
     };
-
+    
     printf("Veuillez saisir le nom de l'etudiant : ");
     scanf("%29s", VETU[nbEtu].nom);
     getchar();
     printf("Veuillez saisir la note sur 100 de l'etudiant : ");
     scanf("%lf", &note);
     getchar();
-
+    
     while (note < 0 || note > 100)
     {
         printf("Erreur, Veuillez saisir une note comprise entre 0 et 100 : ");
         scanf("%lf", &note);
     }
-
+    
     VETU[nbEtu].note = note;
-    VETU[nbEtu].numero = nbEtu;
-    printf("Insertion de l'etudiant %s reussi \n", VETU[nbEtu].nom);
-
+    VETU[nbEtu].numero = ++dernierNumero;
+    printf("Insertion de l'etudiant %s reussi (numero %d)\n", VETU[nbEtu].nom, VETU[nbEtu].numero);
+    
     chainageAlphabetique(VETU[nbEtu]);
     chainageSuivant(VETU[nbEtu]);
     nbEtu++;
 }
-
 void chainageSuivant(Etudiant e)
 {
     int i = nbEtu;
@@ -73,8 +75,8 @@ void chainageSuivant(Etudiant e)
 
 void chainageAlphabetique(Etudiant e)
 {
-    int i = nbEtu;        // Indice du nouvel étudiant
-    ALPHABETIQUE[i] = -1; // Marqueur de fin par défaut
+    int i = nbEtu;       
+    ALPHABETIQUE[i] = -1; 
 
     if (DEBAlph == -1 || strcmp(e.nom, VETU[DEBAlph].nom) <= 0)
     {
@@ -94,106 +96,142 @@ void chainageAlphabetique(Etudiant e)
         ALPHABETIQUE[i] = cour;
     }
 }
+
+
+
+
 void supprimerEtudiant()
 {
-    int numero;
-    int indice = -1;
-
-    // Demander le numéro de l'étudiant à supprimer
+    int numeroSuppression;
+    int indiceEtudiant = -1;
+    
+    if (nbEtu == 0)
+    {
+        printf("Erreur: Aucun etudiant a supprimer.\n");
+        return;
+    }
+    
     printf("Veuillez saisir le numero de l'etudiant a supprimer : ");
-    scanf("%d", &numero);
+    scanf("%d", &numeroSuppression);
     getchar();
+    
 
-    // Rechercher l'étudiant dans le tableau
     for (int i = 0; i < nbEtu; i++)
     {
-        if (VETU[i].numero == numero)
+        if (VETU[i].numero == numeroSuppression)
         {
-            indice = i;
+            indiceEtudiant = i;
             break;
         }
     }
-
-    // Vérifier si l'étudiant existe
-    if (indice == -1)
+    
+    if (indiceEtudiant == -1)
     {
-        printf("Etudiant avec le numero %d non trouve.\n", numero);
+        printf("Erreur: Aucun etudiant avec le numero %d n'a ete trouve.\n", numeroSuppression);
         return;
     }
-
-    // Stocker le nom pour le message final
-    char nom[30];
-    strcpy(nom, VETU[indice].nom);
-
-    // Supprimer du chaînage SUIVANT (par note)
-    if (DEB == indice)
+    
+ 
+    if (DEB == indiceEtudiant)
     {
-        // Si c'est le premier élément
-        DEB = SUIVANT[indice];
+   
+        DEB = SUIVANT[indiceEtudiant];
     }
     else
     {
-        // Trouver le prédécesseur dans la chaîne SUIVANT
-        int prec = DEB;
-        while (SUIVANT[prec] != -1 && SUIVANT[prec] != indice)
+        int precedent = DEB;
+        while (SUIVANT[precedent] != indiceEtudiant && SUIVANT[precedent] != -1)
         {
-            prec = SUIVANT[prec];
+            precedent = SUIVANT[precedent];
         }
-        if (SUIVANT[prec] == indice)
+        
+        if (SUIVANT[precedent] == indiceEtudiant)
         {
-            SUIVANT[prec] = SUIVANT[indice];
+            SUIVANT[precedent] = SUIVANT[indiceEtudiant];
         }
     }
-
-    // Supprimer du chaînage ALPHABETIQUE
-    if (DEBAlph == indice)
+    
+  
+    if (DEBAlph == indiceEtudiant)
     {
-        // Si c'est le premier élément
-        DEBAlph = ALPHABETIQUE[indice];
+   
+        DEBAlph = ALPHABETIQUE[indiceEtudiant];
     }
     else
     {
-        // Trouver le prédécesseur dans la chaîne ALPHABETIQUE
-        int prec = DEBAlph;
-        while (ALPHABETIQUE[prec] != -1 && ALPHABETIQUE[prec] != indice)
+  
+        int precedent = DEBAlph;
+        while (ALPHABETIQUE[precedent] != indiceEtudiant && ALPHABETIQUE[precedent] != -1)
         {
-            prec = ALPHABETIQUE[prec];
+            precedent = ALPHABETIQUE[precedent];
         }
-        if (ALPHABETIQUE[prec] == indice)
+        
+        if (ALPHABETIQUE[precedent] == indiceEtudiant)
         {
-            ALPHABETIQUE[prec] = ALPHABETIQUE[indice];
+            ALPHABETIQUE[precedent] = ALPHABETIQUE[indiceEtudiant];
         }
     }
+    
+    printf("L'etudiant %s (numero %d) a ete supprime avec succes.\n", 
+           VETU[indiceEtudiant].nom, VETU[indiceEtudiant].numero);
+    
 
-    // Mise à jour des indices dans les tableaux SUIVANT et ALPHABETIQUE
-    // Pour tous les indices qui sont supérieurs à l'indice supprimé
-    for (int i = 0; i < nbEtu; i++)
+    if (indiceEtudiant < nbEtu - 1)
     {
-        if (SUIVANT[i] > indice)
+        VETU[indiceEtudiant] = VETU[nbEtu - 1];
+ 
+        if (DEB == nbEtu - 1)
         {
-            SUIVANT[i]--;
+            DEB = indiceEtudiant;
         }
-        if (ALPHABETIQUE[i] > indice)
+        else 
         {
-            ALPHABETIQUE[i]--;
+            int i = DEB;
+            while (i != -1)
+            {
+                if (SUIVANT[i] == nbEtu - 1)
+                {
+                    SUIVANT[i] = indiceEtudiant;
+                    break;
+                }
+                i = SUIVANT[i];
+            }
         }
-    }
+        
 
-    // Déplacer tous les étudiants après l'indice supprimé
-    for (int i = indice; i < nbEtu - 1; i++)
-    {
-        VETU[i] = VETU[i + 1];
-        SUIVANT[i] = SUIVANT[i + 1];
-        ALPHABETIQUE[i] = ALPHABETIQUE[i + 1];
-        // Mettre à jour le numéro si nécessaire
-        VETU[i].numero = i;
-    }
+        if (DEBAlph == nbEtu - 1)
+        {
+            DEBAlph = indiceEtudiant;
+        }
+        else
+        {
+            int i = DEBAlph;
+            while (i != -1)
+            {
+                if (ALPHABETIQUE[i] == nbEtu - 1)
+                {
+                    ALPHABETIQUE[i] = indiceEtudiant;
+                    break;
+                }
+                i = ALPHABETIQUE[i];
+            }
+        }
+        
 
-    // Décrémenter le nombre d'étudiants
+        SUIVANT[indiceEtudiant] = SUIVANT[nbEtu - 1];
+        ALPHABETIQUE[indiceEtudiant] = ALPHABETIQUE[nbEtu - 1];
+    }
+    
     nbEtu--;
-
-    printf("Etudiant %s (numero %d) supprime avec succes.\n", nom, numero);
 }
+
+
+
+
+
+
+
+
 void afficherParMerite()
 {
     if (nbEtu == 0)
@@ -238,42 +276,57 @@ void afficherParOrdreAleatoire()
     if (nbEtu == 0)
     {
         printf("Aucun etudiant a afficher.\n");
+        return;
     }
-    else
+    
+    int dejaAffiches[nbEtu];
+    for (int i = 0; i < nbEtu; i++)
     {
-        for (int i = 0; i < nbEtu; i++)
+        dejaAffiches[i] = 0;  
+    }
+    
+    int compteur = 0;
+    
+    while (compteur < nbEtu)
+    {
+        int idx = rand() % nbEtu;
+        
+        if (dejaAffiches[idx] == 0)
         {
             printf("Numero: %d, Nom: %s, Note: %.1f\n",
-                   VETU[i].numero, VETU[i].nom, VETU[i].note);
+                   VETU[idx].numero, VETU[idx].nom, VETU[idx].note);
+            
+            dejaAffiches[idx] = 1;  // Marquer comme affiché
+            compteur++;
         }
     }
 }
 
 void sauvegarderDonnees()
 {
-    FILE *f = fopen(fichier, "w"); // "w" = write text
+    FILE *f = fopen(fichier, "w");
     if (f == NULL)
     {
         printf("Erreur lors de l'ouverture du fichier %s pour sauvegarde.\n", fichier);
         return;
     }
 
-    // Sauvegarder NBETU et DEB
-    fprintf(f, "%d %d %d\n", nbEtu, DEB, DEBAlph);
 
-    // Sauvegarder VETU
+    fprintf(f, "%d %d %d %d\n", nbEtu, DEB, DEBAlph,dernierNumero);
+
+    
     for (int i = 0; i < nbEtu; i++)
     {
         fprintf(f, "%d %s %lf\n", VETU[i].numero, VETU[i].nom, VETU[i].note);
     }
 
-    // Sauvegarder SUIVANT
+    
     for (int i = 0; i < nbEtu; i++)
     {
         fprintf(f, "%d \n", SUIVANT[i]);
     }
 
-    // Sauvegarder ALPHABETIQUE
+    
     for (int i = 0; i < nbEtu; i++)
     {
         fprintf(f, "%d ", ALPHABETIQUE[i]);
@@ -286,17 +339,17 @@ void sauvegarderDonnees()
 
 void restaurerDonnees()
 {
-    FILE *f = fopen(fichier, "r"); // "r" = read text
+    FILE *f = fopen(fichier, "r");
     if (f == NULL)
     {
         printf("Erreur lors de l'ouverture du fichier %s pour restauration.\n", fichier);
         return;
     }
 
-    // Lire nbEtu et DEB
-    if (fscanf(f, "%d %d %d\n", &nbEtu, &DEB, &DEBAlph) != 3)
+    
+    if (fscanf(f, "%d %d %d %d\n", &nbEtu, &DEB, &DEBAlph,&dernierNumero) != 4)
     {
-        printf("Erreur lors de la lecture de nbEtu et DEB.\n");
+        printf("Erreur lors de la lecture de nbEtu ,DEB, DEBAlph et dernierNumero.\n");
         fclose(f);
         return;
     }
@@ -308,7 +361,7 @@ void restaurerDonnees()
         return;
     }
 
-    // Lire VETU
+  
     for (int i = 0; i < nbEtu; i++)
     {
         if (fscanf(f, "%d %s %lf\n", &VETU[i].numero, VETU[i].nom, &VETU[i].note) != 3)
@@ -319,7 +372,6 @@ void restaurerDonnees()
         }
     }
 
-    // Lire SUIVANT
     for (int i = 0; i < nbEtu; i++)
     {
         if (fscanf(f, "%d ", &SUIVANT[i]) != 1)
@@ -330,7 +382,6 @@ void restaurerDonnees()
         }
     }
 
-    // Lire ALPHABETIQUE
     for (int i = 0; i < nbEtu; i++)
     {
         if (fscanf(f, "%d ", &ALPHABETIQUE[i]) != 1)
@@ -341,7 +392,7 @@ void restaurerDonnees()
         }
     }
 
-    printf("%d %d %d", nbEtu, DEB, DEBAlph);
+
     fclose(f);
     printf("Donnees restaurees avec succes depuis %s.\n", fichier);
 }

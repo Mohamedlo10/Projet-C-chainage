@@ -16,6 +16,7 @@ extern int nbEtu;
 extern int choix;
 extern int DEB;
 extern int DEBAlph;
+extern int dernierNumero;
 extern char *fichier;
 
 void ajouterEtudiant();                // fait
