@@ -1,10 +1,12 @@
 #include <stdio.h>
 #include "fonctionnalite.h"
-
+#include <time.h>
+#include <stdlib.h>
 int main()
 {
     restaurerDonnees();
     printf("=== Test de la fonction ajouterEtudiant ===\n");
+    srand(time(NULL));
 
     do
     {
